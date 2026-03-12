@@ -1,12 +1,5 @@
 pipeline {
-
     agent any
-
-    environment {
-        DOCKER_HUB_USER = 'your-dockerhub-username'
-        IMAGE_NAME = 'todo-app'
-        DOCKER_HUB_CREDS = 'docker-hub-credentials'
-    }
 
     stages {
 
@@ -17,8 +10,17 @@ pipeline {
                 }
             }
             steps {
-                echo 'Installing dependencies'
-                sh 'PUPPETEER_SKIP_DOWNLOAD=true npm install'
+                echo 'Installing system dependencies'
+
+                sh '''
+                apk add --no-cache python3 make g++
+                '''
+
+                echo 'Installing npm dependencies'
+
+                sh '''
+                PUPPETEER_SKIP_DOWNLOAD=true npm install
+                '''
             }
         }
 
@@ -30,37 +32,46 @@ pipeline {
             }
             steps {
                 echo 'Running tests'
-                sh 'npm test || true'
+
+                sh '''
+                apk add --no-cache python3 make g++
+                npm test
+                '''
             }
         }
 
         stage('Containerize') {
             steps {
-                echo 'Building Docker image'
-                sh "docker build -t ${DOCKER_HUB_USER}/${IMAGE_NAME}:latest ."
+                echo 'Building Docker Image'
+
+                sh '''
+                docker build -t your-dockerhub-username/todo-app:latest .
+                '''
             }
         }
 
         stage('Push') {
             steps {
+                echo 'Pushing Docker Image'
+
                 withCredentials([usernamePassword(
-                    credentialsId: "${DOCKER_HUB_CREDS}",
+                    credentialsId: 'dockerhub',
                     usernameVariable: 'DOCKER_USER',
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
 
-                    sh "echo \$DOCKER_PASS | docker login -u \$DOCKER_USER --password-stdin"
-                    sh "docker push ${DOCKER_HUB_USER}/${IMAGE_NAME}:latest"
+                    sh '''
+                    echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+                    docker push your-dockerhub-username/todo-app:latest
+                    '''
                 }
             }
         }
-
     }
 
     post {
         always {
-            sh "docker rmi ${DOCKER_HUB_USER}/${IMAGE_NAME}:latest || true"
+            sh 'docker rmi your-dockerhub-username/todo-app:latest || true'
         }
     }
-
 }

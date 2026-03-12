@@ -46,7 +46,7 @@ pipeline {
             steps {
 
                 sh '''
-                docker build -t your-dockerhub-username/todo-app:latest .
+                docker build -t sittyan/todo-app:latest .
                 '''
             }
         }
@@ -62,7 +62,7 @@ pipeline {
 
                     sh '''
                     echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
-                    docker push your-dockerhub-username/todo-app:latest
+                    docker push sittyan/todo-app:latest
                     '''
                 }
             }
@@ -71,7 +71,7 @@ pipeline {
 
     post {
         always {
-            sh 'docker rmi your-dockerhub-username/todo-app:latest || true'
+            sh 'docker rmi sittyan/todo-app:latest || true'
         }
     }
 }

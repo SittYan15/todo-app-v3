@@ -1,20 +1,19 @@
-# lightweight node image
 FROM node:18-alpine
 
-# working directory
 WORKDIR /usr/src/app
 
-# copy dependencies
+# install system dependencies for sqlite
+RUN apk add --no-cache python3 make g++
+
+# copy dependency files
 COPY package*.json ./
 
 # install dependencies
 RUN npm install --omit=dev
 
-# copy application
+# copy app
 COPY . .
 
-# application port
 EXPOSE 3000
 
-# run application
-CMD ["node","app.js"]
+CMD ["npm", "start"]

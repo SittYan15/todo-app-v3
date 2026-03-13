@@ -3,12 +3,6 @@ pipeline {
 
     stages {
 
-        stage('Preparation') {
-            steps {
-                deleteDir() // This wipes the directory at the start of every build
-            }
-        }
-
         stage('Build') {
             agent {
                 docker {
